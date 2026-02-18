@@ -26,9 +26,7 @@
       const notificationContainer = document.getElementById('kill-notification');
 
       function playKillNotification(killCount, weaponHash) {
-        // Choose weapon-specific config if available, otherwise fallback to default
         const weaponKey = weaponHash !== null && weaponHash !== undefined ? String(weaponHash) : 'default';
-        console.log(weaponKey)
         const weaponMap = killConfig[weaponKey] || killConfig.default;
         const config = killCount > 6 ? weaponMap[6] : weaponMap[killCount];
 
@@ -80,7 +78,7 @@
         if (data.type === 'playerKill') {
           const killStreak = data.killStreak || 1;
           const weaponHash = data.weaponHash || null;
-          console.log(weaponHash)
+        
           playKillNotification(killStreak,weaponHash);
         }
       });
