@@ -10,11 +10,13 @@ ui_page 'web/index.html'
 client_scripts {
     'client.lua'
 }
-
+server_scripts {
+    'server.lua'
+}
 files {
     'web/index.html',
     'web/sounds/**/*',
-    'web/vids/**/*'
+    'web/vids/**/*',
+    'web/css/*',
+    'web/js/*'
 }
-
-exports {}

@@ -1,6 +1,6 @@
 local lastKillTime = 0
 local killCount = 0
-local killResetTime = 5000 -- 5 seconds in milliseconds
+local killResetTime = 10000 -- 10 seconds in milliseconds
 
 
 RegisterNetEvent('hud:updateKill')
@@ -12,11 +12,14 @@ AddEventHandler('hud:updateKill', function()
     else
         killCount = 1
     end
-
     lastKillTime = currentTime
-    SendNUIMessage({
+    local ped = PlayerPedId()
+    local hasWeapon, weaponHash = GetCurrentPedWeapon(ped, true)
+
+   SendNUIMessage({
         type = "playerKill",
-        killStreak = killCount
+        killStreak = killCount,
+        weaponHash = weaponHash
     })
 end)
 
@@ -29,30 +32,30 @@ AddEventHandler('gameEventTriggered', function(event, args)
         local victimPed = args[1]
         local attacker = args[2]
 
-        -- Only trigger if the local player is the attacker
-      --  if attacker == PlayerPedId() then
-            TriggerEvent('hud:updateKill')
-       -- end
+        if attacker == PlayerPedId() then
+            TriggerServerEvent('playerKilled')
+        end
     end
 end)
 
 
-
-
-
-
--- Console command to test kill notifications
 RegisterCommand("testkill", function(source, args, rawCommand)
     local killCount = 1
+
+    local ped = PlayerPedId()
+    local hasWeapon, weaponHash = GetCurrentPedWeapon(ped, true)
+
+    print("Has weapon:", hasWeapon)
+    print("Weapon hash:", weaponHash)
+
     if args[1] then
         killCount = tonumber(args[1])
     end
-    
     SendNUIMessage({
         type = "playerKill",
-        killStreak = killCount
+        killStreak = killCount,
+        weaponHash = weaponHash
     })
     
-    print("^2[Test Kill] ^7Kill count set to: " .. killCount)
 end) 
 
