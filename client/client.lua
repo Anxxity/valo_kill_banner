@@ -41,6 +41,7 @@ end)
 
 
 RegisterCommand("testkill", function(source, args, rawCommand)
+    if not Config.Debug then return end
     local killCount = 1
 
     local ped = PlayerPedId()
