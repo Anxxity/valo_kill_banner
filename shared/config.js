@@ -12,7 +12,8 @@ JSConfig.defaultKillConfig = {
       JSConfig.killConfig = {
         default: JSConfig.defaultKillConfig,
         "-2084633992": JSConfig.defaultKillConfig,
-
+     // assulterifle hash
+     // vvvvvvvvvvvvv
         "-1074790547": {
           1: { video: 'vids/reaver/Reaver-1-kill-notif.webm', audio: 'sounds/reaver/Reaver1.mp3' },
           2: { video: 'vids/reaver/Reaver-2-kill-notif.webm', audio: 'sounds/reaver/Reaver2.mp3' },
