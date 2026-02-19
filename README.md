@@ -135,6 +135,11 @@ killConfig: {
 
 ## Troubleshooting
 
+**Notifications not showing?**
+- Check framework is loaded
+- Verify NUI is enabled in fxmanifest.lua
+- Test with `/testkill` command
+
 **Audio/Video missing?**
 - Verify file paths in `web/js/main.js`
 - Ensure files are listed in `files` section of fxmanifest.lua
