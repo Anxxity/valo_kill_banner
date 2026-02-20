@@ -149,4 +149,5 @@ killConfig: {
 - Increase `killResetTime` in client.lua if needed
 - Default is 10 seconds (10000ms)
 
-
+## Known Bugs 
+- sometime only the audio plays 
