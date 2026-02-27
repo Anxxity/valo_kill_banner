@@ -6,8 +6,41 @@ document.addEventListener("DOMContentLoaded", () => {
   const audioElement = document.getElementById('kill-audio');
   const notificationContainer = document.getElementById('kill-notification');
 
+  let hideTimeout = null;
+  let currentPlayId = 0;
+
+
+  function hideNotification(playId) {
+    if (playId !== currentPlayId) return;
+
+    notificationContainer.classList.add('fade-out');
+    setTimeout(() => {
+      if (playId !== currentPlayId) return;
+      notificationContainer.classList.remove('active');
+    }, 300);
+  }
+
   function playKillNotification(killCount, weaponHash) {
-    const weaponKey = weaponHash !== null && weaponHash !== undefined ? String(weaponHash) : 'default';
+    currentPlayId++;
+    const playId = currentPlayId;
+
+
+     if (hideTimeout) {
+      clearTimeout(hideTimeout);
+      hideTimeout = null;
+    }
+
+    videoElement.pause();
+    audioElement.pause();
+    videoElement.removeAttribute('src');
+    audioElement.removeAttribute('src');
+    videoElement.load();
+    audioElement.load();
+
+    const weaponKey =
+      weaponHash !== null && weaponHash !== undefined
+        ? String(weaponHash)
+        : 'default';
     const weaponMap = killConfig[weaponKey] || killConfig.default;
     const config = killCount > 6 ? weaponMap[6] : weaponMap[killCount];
 
@@ -20,46 +53,38 @@ document.addEventListener("DOMContentLoaded", () => {
     audioElement.src = config.audio;
     notificationContainer.classList.remove('fade-out');
     notificationContainer.classList.add('active');
-
-    document.body.classList.remove('flash');
-    setTimeout(() => {
-      document.body.classList.add('flash');
-    }, 10);
-
+    requestAnimationFrame(() => document.body.classList.add('flash'));
     videoElement.currentTime = 0;
     audioElement.currentTime = 0;
-
-    videoElement.play();
-    audioElement.volume = .10
-    audioElement.play();
+    audioElement.volume = 0.1;
+  
+    Promise.allSettled([
+      videoElement.play(),
+      audioElement.play()
+    ]);
 
     videoElement.onended = () => {
-      notificationContainer.classList.add('fade-out');
-      setTimeout(() => {
-        notificationContainer.classList.remove('active');
-      }, 500);
+      hideNotification(playId);
     };
 
-    videoElement.onloadedmetadata = () => {
-      setTimeout(() => {
-        if (notificationContainer.classList.contains('active')) {
-          notificationContainer.classList.add('fade-out');
-          setTimeout(() => {
-            notificationContainer.classList.remove('active');
-          }, 500);
-        }
-      }, (videoElement.duration + 0.5) * 1000);
+     videoElement.onloadedmetadata = () => {
+      hideTimeout = setTimeout(() => {
+        hideNotification(playId);
+      }, (videoElement.duration + 0.3) * 1000);
     };
+
+   
+
+    
   }
 
   window.addEventListener('message', (event) => {
     const data = event.data;
-
-    if (data.type === 'playerKill') {
-      const killStreak = data.killStreak || 1;
-      const weaponHash = data.weaponHash || null;
-
-      playKillNotification(killStreak, weaponHash);
+    if (data?.type === 'playerKill') {
+      playKillNotification(
+        data.killStreak || 1,
+        data.weaponHash ?? null
+      );
     }
   });
 });
