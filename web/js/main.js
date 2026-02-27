@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let hideTimeout = null;
   let currentPlayId = 0;
 
-
   function hideNotification(playId) {
     if (playId !== currentPlayId) return;
 
@@ -23,9 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function playKillNotification(killCount, weaponHash) {
     currentPlayId++;
     const playId = currentPlayId;
-
-
-     if (hideTimeout) {
+    
+    if (hideTimeout) {
       clearTimeout(hideTimeout);
       hideTimeout = null;
     }
@@ -41,18 +39,19 @@ document.addEventListener("DOMContentLoaded", () => {
       weaponHash !== null && weaponHash !== undefined
         ? String(weaponHash)
         : 'default';
+
     const weaponMap = killConfig[weaponKey] || killConfig.default;
     const config = killCount > 6 ? weaponMap[6] : weaponMap[killCount];
 
     if (!config) {
-      console.error('No config found for kill count:', killCount);
+      console.error('No config for kill count:', killCount);
       return;
     }
-
     videoElement.src = config.video;
     audioElement.src = config.audio;
     notificationContainer.classList.remove('fade-out');
     notificationContainer.classList.add('active');
+    document.body.classList.remove('flash');
     requestAnimationFrame(() => document.body.classList.add('flash'));
     videoElement.currentTime = 0;
     audioElement.currentTime = 0;
@@ -62,12 +61,11 @@ document.addEventListener("DOMContentLoaded", () => {
       videoElement.play(),
       audioElement.play()
     ]);
-
     videoElement.onended = () => {
       hideNotification(playId);
     };
 
-     videoElement.onloadedmetadata = () => {
+    videoElement.onloadedmetadata = () => {
       hideTimeout = setTimeout(() => {
         hideNotification(playId);
       }, (videoElement.duration + 0.3) * 1000);
@@ -84,4 +82,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
