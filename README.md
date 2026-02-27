@@ -150,7 +150,8 @@ killConfig: {
 - Default is 10 seconds (10000ms)
 
 ## Known Bugs 
-- for now not any
+- ~~Bug where only audio plays~~  **Fixed**
+- no bugs for now
 
 
 
