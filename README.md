@@ -150,4 +150,24 @@ killConfig: {
 - Default is 10 seconds (10000ms)
 
 ## Known Bugs 
-- sometime only the audio plays 
+- for now not any
+
+
+
+## Disclaimer
+
+####  Asset Usage Notice
+
+The video clips used in this project are sourced from many YouTube Video, and the audio effects are sourced from [ValoFandom](https://valorant.fandom.com/wiki/Kill_Banners).
+
+These assets are not owned by the author of this script and are used strictly for educational, demonstration, and non-commercial purposes.
+
+All rights to the respective videos, sounds, trademarks, and intellectual property belong to their original creators and owners.
+
+If you plan to use this resource in a public or commercial server, it is strongly recommended to:
+
+Replace the assets with original or properly licensed content
+
+Or obtain permission from the original rights holders
+
+The developer of this script does not claim ownership of any third-party media included.
