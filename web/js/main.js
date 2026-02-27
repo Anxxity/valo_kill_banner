@@ -72,10 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
         hideNotification(playId);
       }, (videoElement.duration + 0.3) * 1000);
     };
-
-   
-
-    
   }
 
   window.addEventListener('message', (event) => {
