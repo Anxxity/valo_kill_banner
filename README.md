@@ -1,4 +1,4 @@
-# Kill Notification System
+# valorant kill banner fivem 
 
 A FiveM script for GTA V that displays dynamic kill streak notifications with custom video and audio effects. The system detects when a player kills another player and triggers an overlay with progressive notifications based on kill count.
 
@@ -155,7 +155,7 @@ killConfig: {
 
 
 
-## Disclaimer
+## Disclaimer valo kill banner fivem 
 
 ####  Asset Usage Notice
 
