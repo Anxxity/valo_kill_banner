@@ -1,10 +1,107 @@
+local pendingKillReports = {}
+local lastAcceptedKill = {}
+
+-- Record fatal-damage candidates observed by the server.
+-- willKill is supplied by the attacking client, so it is a signal to validate,
+-- not independent proof that the victim died.
+AddEventHandler('weaponDamageEvent', function(sender, data)
+    if type(data) ~= 'table' or data.willKill ~= true then
+        return
+    end
+
+    local weaponHash = data.weaponType
+    if type(weaponHash) ~= 'number' then
+        return
+    end
+
+    local victimIds = data.hitGlobalIds
+    if type(victimIds) ~= 'table' or #victimIds == 0 then
+        victimIds = { data.hitGlobalId }
+    end
+
+    pendingKillReports[sender] = pendingKillReports[sender] or {}
+    local reports = pendingKillReports[sender]
+    local currentTime = GetGameTimer()
+
+    -- Keep the cache short-lived and bounded to recent victim IDs.
+    for victimNetId, report in pairs(reports) do
+        if currentTime - report.time > Config.killReportWindow then
+            reports[victimNetId] = nil
+        end
+    end
+
+    for _, victimNetId in ipairs(victimIds) do
+        if type(victimNetId) == 'number' and victimNetId > 0 then
+            reports[victimNetId] = {
+                weaponHash = weaponHash,
+                time = currentTime
+            }
+        end
+    end
+end)
+
 RegisterNetEvent('playerKilled')
-AddEventHandler('playerKilled', function(weaponHash)
+AddEventHandler('playerKilled', function(victimNetId, weaponHash)
     local src = source
 
-    -- The weapon hash only selects the local banner theme.
-    -- It is not proof that a legitimate kill happened.
-    TriggerClientEvent('hud:updateKill', src, weaponHash)
+    if type(victimNetId) ~= 'number' or victimNetId <= 0 then
+        return
+    end
+
+    if type(weaponHash) ~= 'number' then
+        return
+    end
+
+    local reports = pendingKillReports[src]
+    local report = reports and reports[victimNetId]
+    if not report then
+        return
+    end
+
+    local currentTime = GetGameTimer()
+    if currentTime - report.time > Config.killReportWindow then
+        reports[victimNetId] = nil
+        return
+    end
+
+    if report.weaponHash ~= weaponHash then
+        return
+    end
+
+    -- Consume the candidate so the same damage event cannot be replayed.
+    reports[victimNetId] = nil
+
+    local lastKill = lastAcceptedKill[src] or 0
+    if currentTime - lastKill < Config.killReportRateLimit then
+        return
+    end
+
+    local victimEntity = NetworkGetEntityFromNetworkId(victimNetId)
+    if victimEntity == 0 or not DoesEntityExist(victimEntity) then
+        return
+    end
+
+    if GetEntityType(victimEntity) ~= 1 then
+        return
+    end
+
+    local victimOwner = NetworkGetEntityOwner(victimEntity)
+    if victimOwner == 0 or victimOwner == src then
+        return
+    end
+
+    if GetPlayerPed(victimOwner) ~= victimEntity then
+        return
+    end
+
+    lastAcceptedKill[src] = currentTime
+    TriggerClientEvent('hud:updateKill', src, report.weaponHash)
+end)
+
+AddEventHandler('playerDropped', function()
+    local src = source
+    pendingKillReports[src] = nil
+    lastAcceptedKill[src] = nil
 end)
 
 local function isNewerVersion(remoteVersion, currentVersion)
