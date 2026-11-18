@@ -114,6 +114,17 @@ killConfig: {
 - Video dimensions
 - Z-index and layering
 
+## Version Check
+
+The server checks the latest version from this repository when the resource starts.
+
+- The installed version is read from the `version` field in `fxmanifest.lua`.
+- The latest version is read from [version.json](https://github.com/Anxxity/valo_kill_banner/blob/main/version.json).
+- If a newer version is available, a message with the release link is printed in the server console.
+- The check requires the FiveM server to have internet access. If GitHub cannot be reached, the resource continues to work normally.
+
+When publishing an update, change the version in both `fxmanifest.lua` and `version.json`.
+
 ## Installation
 
 1. Place the resource folder in your FiveM `resources` directory
