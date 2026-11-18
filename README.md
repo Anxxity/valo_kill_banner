@@ -48,7 +48,7 @@ Weapon hashes trigger different notification styles:
 
 - `default` or `-2084633992` - Default notifications
 - `-1074790547` - custom weapon notifications
-- Custom hashes can be added to `web/js/main.js`
+- Weapon hashes and theme mappings are configured in `shared/config.js`
 
 ## Events
 
@@ -113,6 +113,17 @@ killConfig: {
 - Fade in/out animations
 - Video dimensions
 - Z-index and layering
+
+## Weapon Theme Configuration
+
+Weapon hashes are mapped to theme names in `shared/config.js`.
+
+- `defaultTheme` contains the fallback media for each kill streak.
+- `themes` contains named theme definitions such as `reaver`.
+- `weaponThemes` maps a weapon hash to a theme name.
+- A theme can override only the streaks it has assets for; missing streaks fall back to the matching default streak.
+
+To add a theme, add its streak media under `themes`, then map the weapon hash under `weaponThemes`. The default theme remains the fallback for unmapped weapons.
 
 ## Server-side Kill Report Checks
 
