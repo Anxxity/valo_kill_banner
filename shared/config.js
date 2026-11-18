@@ -1,5 +1,7 @@
 // Shared weapon-theme configuration for the NUI.
 const JSConfig = {
+  // Global NUI audio volume (0.0 to 1.0); individual streaks can override it.
+  audioVolume: 0.1,
   defaultTheme: {
     1: { video: "vids/defult/1-kill-notif.webm", audio: "sounds/defult/1-kill-notif.mp3" },
     2: { video: "vids/defult/2-kill-notif.webm", audio: "sounds/defult/2-kill-notif.mp3" },
