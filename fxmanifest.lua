@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'Remin mohammed'
 description 'Valorant kill banner'
-version '1.0.4'
+version '1.0.5'
 
 ui_page 'web/index.html'
 
