@@ -1,6 +1,7 @@
 local lastKillTime = 0
 local killCount = 0
 local killResetTime = Config.killResetTime -- Time allowed between kills in milliseconds
+local reportedVictims = {}
 
 RegisterNetEvent('hud:updateKill')
 AddEventHandler('hud:updateKill', function(weaponHash)
@@ -14,8 +15,6 @@ AddEventHandler('hud:updateKill', function(weaponHash)
 
     lastKillTime = currentTime
 
-    -- Keep the weapon from the moment of the kill. The player may switch
-    -- weapons before the server event gets back to this client.
     SendNUIMessage({
         type = "playerKill",
         killStreak = killCount,
@@ -24,24 +23,45 @@ AddEventHandler('hud:updateKill', function(weaponHash)
 end)
 
 AddEventHandler('gameEventTriggered', function(event, args)
-    if event ~= "CEventNetworkEntityDamage" or args[6] ~= 1 then
+    if event ~= "CEventNetworkEntityDamage" then
         return
     end
 
     local victimPed = args[1]
     local attacker = args[2]
+    local wasFatal = args[6] == 1
+    local weaponHash = args[7]
     local playerPed = PlayerPedId()
+
+    if not wasFatal then
+        return
+    end
 
     if not IsEntityAPed(victimPed) or not IsPedAPlayer(victimPed) then
         return
     end
 
-    -- Ignore events where the local player was not the attacker.
+    -- This resource only counts kills made by the local player.
     if attacker ~= playerPed or victimPed == playerPed then
         return
     end
 
-    local _, weaponHash = GetCurrentPedWeapon(playerPed, true)
+    local currentTime = GetGameTimer()
+
+    -- Clear old entries so entity handles can be reused safely.
+    for reportedVictim, reportTime in pairs(reportedVictims) do
+        if currentTime - reportTime > 5000 then
+            reportedVictims[reportedVictim] = nil
+        end
+    end
+
+    -- A fatal damage event can be emitted more than once for the same ped.
+    if reportedVictims[victimPed] then
+        return
+    end
+
+    reportedVictims[victimPed] = currentTime
+
     TriggerServerEvent('playerKilled', weaponHash)
 end)
 
