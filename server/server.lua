@@ -1,11 +1,10 @@
 local pendingKillReports = {}
 local lastAcceptedKill = {}
 
--- Record fatal-damage candidates observed by the server.
--- willKill is supplied by the attacking client, so it is a signal to validate,
--- not independent proof that the victim died.
+-- Record recent damage events observed by the server. The client still reports
+-- which hit it considered fatal; this cache checks that a matching hit occurred.
 AddEventHandler('weaponDamageEvent', function(sender, data)
-    if type(data) ~= 'table' or data.willKill ~= true then
+    if type(data) ~= 'table' then
         return
     end
 
