@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'Remin mohammed'
 description 'Valorant kill banner'
-version '1.0.1'
+version '1.0.2'
 
 ui_page 'web/index.html'
 
@@ -14,8 +14,8 @@ server_scripts {
     'server/server.lua'
 }
 
-shared_scripts { 
-	'shared/config.lua'
+shared_scripts {
+    'shared/config.lua'
 }
 
 files {
