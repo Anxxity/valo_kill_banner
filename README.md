@@ -54,15 +54,15 @@ Weapon hashes trigger different notification styles:
 
 ### Server Events
 
-- **`playerKilled`** - Fired by client when player kills someone
+- **`playerKilled`** - Client reports a fatal player hit with the victim network ID and weapon hash
+  - Server checks for a matching recent `weaponDamageEvent`, validates the networked victim entity, and applies a per-player rate limit
   - Triggers: `hud:updateKill` on the killing player's client
 
 ### Client Events
 
-- **`hud:updateKill`** - Received from server after kill confirmed
+- **`hud:updateKill`** - Received from server after the kill report passes the available checks
   - Updates kill streak counter
-  - Sends NUI message with kill data
-  - Gets current weapon hash
+  - Sends NUI message with kill data and the weapon hash captured at the hit
 
 ## Commands
 
@@ -113,6 +113,19 @@ killConfig: {
 - Fade in/out animations
 - Video dimensions
 - Z-index and layering
+
+## Server-side Kill Report Checks
+
+The server keeps a short-lived record of recent `weaponDamageEvent` events. When the client reports a fatal player hit, the server checks that:
+
+- A matching recent damage event exists for that player, victim network ID, and weapon hash
+- The victim network ID resolves to another player's ped
+- The report is inside the configured validation window
+- The player is not sending reports faster than the configured rate limit
+
+The validation window and rate limit are configured in `shared/config.lua`.
+
+**Security note:** FiveM's `weaponDamageEvent` is a network damage request, and the client supplies the fatal-hit observation. These checks reduce forged/replayed event reports, but they do not independently prove a kill or provide complete anti-cheat protection.
 
 ## Version Check
 
