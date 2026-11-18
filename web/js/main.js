@@ -10,11 +10,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const AUDIO_VOLUME = 0.1;
+  const DEFAULT_AUDIO_VOLUME = 0.1;
   const FADE_OUT_DURATION = 500;
 
   let hideTimeout = null;
   let currentPlayId = 0;
+  let loadedVideo = "";
+  let loadedAudio = "";
 
   function clearHideTimeout() {
     if (hideTimeout !== null) {
@@ -23,13 +25,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function stopMedia() {
-    videoElement.pause();
-    audioElement.pause();
+  function resetPlayback(element) {
+    element.pause();
+    try {
+      element.currentTime = 0;
+    } catch (_) {
+      // The media may not have loaded metadata yet.
+    }
+  }
+
+  function releaseMedia() {
+    resetPlayback(videoElement);
+    resetPlayback(audioElement);
     videoElement.removeAttribute("src");
     audioElement.removeAttribute("src");
     videoElement.load();
     audioElement.load();
+    loadedVideo = "";
+    loadedAudio = "";
+  }
+
+  function setMediaSource(element, source, currentSource) {
+    if (source === currentSource) {
+      resetPlayback(element);
+      return currentSource;
+    }
+
+    element.src = source;
+    element.load();
+    return source;
   }
 
   function hideNotification(playId) {
@@ -44,7 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (playId !== currentPlayId) return;
 
       notificationContainer.classList.remove("active", "fade-out");
-      stopMedia();
+      resetPlayback(videoElement);
+      resetPlayback(audioElement);
       hideTimeout = null;
     }, FADE_OUT_DURATION);
   }
@@ -63,9 +88,13 @@ document.addEventListener("DOMContentLoaded", () => {
       : themeConfig.defaultTheme;
 
     const streak = Math.max(1, Math.min(Math.floor(Number(killCount) || 1), 6));
-
-    // Themes can override only the streaks they provide.
     return selectedTheme[streak] || themeConfig.defaultTheme[streak] || null;
+  }
+
+  function getAudioVolume(config) {
+    const configuredVolume = Number(config.volume ?? themeConfig.audioVolume ?? DEFAULT_AUDIO_VOLUME);
+    if (!Number.isFinite(configuredVolume)) return DEFAULT_AUDIO_VOLUME;
+    return Math.max(0, Math.min(configuredVolume, 1));
   }
 
   function playKillNotification(killCount, weaponHash) {
@@ -80,7 +109,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const playId = currentPlayId;
 
     clearHideTimeout();
-    stopMedia();
+    resetPlayback(videoElement);
+    resetPlayback(audioElement);
 
     notificationContainer.classList.remove("fade-out");
     notificationContainer.classList.add("active");
@@ -106,11 +136,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    videoElement.src = config.video;
-    audioElement.src = config.audio;
-    audioElement.volume = AUDIO_VOLUME;
-    videoElement.load();
-    audioElement.load();
+    loadedVideo = setMediaSource(videoElement, config.video, loadedVideo);
+    loadedAudio = setMediaSource(audioElement, config.audio, loadedAudio);
+    audioElement.volume = getAudioVolume(config);
 
     const videoPlayback = videoElement.play();
     if (videoPlayback && typeof videoPlayback.catch === "function") {
@@ -138,6 +166,6 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("pagehide", () => {
     currentPlayId++;
     clearHideTimeout();
-    stopMedia();
+    releaseMedia();
   });
 });
