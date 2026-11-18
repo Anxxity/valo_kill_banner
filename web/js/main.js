@@ -1,4 +1,4 @@
-const killConfig = JSConfig.killConfig;
+const themeConfig = JSConfig;
 
 document.addEventListener("DOMContentLoaded", () => {
   const videoElement = document.getElementById("kill-video");
@@ -26,10 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function stopMedia() {
     videoElement.pause();
     audioElement.pause();
-
     videoElement.removeAttribute("src");
     audioElement.removeAttribute("src");
-
     videoElement.load();
     audioElement.load();
   }
@@ -43,9 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
     notificationContainer.classList.add("fade-out");
 
     hideTimeout = setTimeout(() => {
-      if (playId !== currentPlayId) {
-        return;
-      }
+      if (playId !== currentPlayId) return;
 
       notificationContainer.classList.remove("active", "fade-out");
       stopMedia();
@@ -54,18 +50,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getKillConfig(killCount, weaponHash) {
-    const weaponKey =
-      weaponHash !== null && weaponHash !== undefined
-        ? String(weaponHash)
-        : "default";
+    const weaponKey = weaponHash === null || weaponHash === undefined
+      ? null
+      : String(weaponHash);
 
-    const weaponMap = killConfig[weaponKey] || killConfig.default;
-    if (!weaponMap) {
-      return null;
-    }
+    const themeName = weaponKey
+      ? themeConfig.weaponThemes[weaponKey]
+      : null;
+
+    const selectedTheme = themeName && themeConfig.themes[themeName]
+      ? themeConfig.themes[themeName]
+      : themeConfig.defaultTheme;
 
     const streak = Math.max(1, Math.min(Math.floor(Number(killCount) || 1), 6));
-    return weaponMap[streak] || weaponMap[6] || null;
+
+    // Themes can override only the streaks they provide.
+    return selectedTheme[streak] || themeConfig.defaultTheme[streak] || null;
   }
 
   function playKillNotification(killCount, weaponHash) {
@@ -102,16 +102,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (Number.isFinite(videoElement.duration) && videoElement.duration > 0) {
         clearHideTimeout();
-        hideTimeout = setTimeout(() => {
-          hideNotification(playId);
-        }, (videoElement.duration + 0.5) * 1000);
+        hideTimeout = setTimeout(() => hideNotification(playId), (videoElement.duration + 0.5) * 1000);
       }
     };
 
     videoElement.src = config.video;
     audioElement.src = config.audio;
     audioElement.volume = AUDIO_VOLUME;
-
     videoElement.load();
     audioElement.load();
 
@@ -134,13 +131,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.addEventListener("message", (event) => {
-    const data = event.data;
-
-    if (data?.type !== "playerKill") {
-      return;
-    }
-
-    playKillNotification(data.killStreak, data.weaponHash ?? null);
+    if (event.data?.type !== "playerKill") return;
+    playKillNotification(event.data.killStreak, event.data.weaponHash ?? null);
   });
 
   window.addEventListener("pagehide", () => {
