@@ -127,6 +127,16 @@ The validation window and rate limit are configured in `shared/config.lua`.
 
 **Security note:** FiveM's `weaponDamageEvent` is a network damage request, and the client supplies the fatal-hit observation. These checks reduce forged/replayed event reports, but they do not independently prove a kill or provide complete anti-cheat protection.
 
+## NUI Playback Lifecycle
+
+The NUI notification player stops previous media before starting a new kill banner, ignores stale playback callbacks, and clears its hide timer when a newer notification arrives.
+
+- Video and audio playback errors are handled separately.
+- A failed video hides the notification; a failed audio file logs a warning without stopping the video.
+- The notification hides when the video ends, with a duration-based fallback.
+- The fade-out timer matches the CSS animation duration.
+- Media is stopped and unloaded when the NUI page is closed.
+
 ## Version Check
 
 The server checks the latest version from this repository when the resource starts.
