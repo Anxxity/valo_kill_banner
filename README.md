@@ -94,19 +94,11 @@ Example:
 - **killResetTime**: Time window for consecutive kills (in milliseconds)
   - Default: 10000 (10 seconds)
 
-### Web-Side (web/js/main.js)
-Edit the `killConfig` object to:
-- Add new weapon themes
-- Change video/audio file paths
-- Adjust volume levels (default: 0.10)
-
-Example:
-```javascript
-killConfig: {
-    default: { videos: [...], audios: [...] },
-    '-1074790547': { videos: [...], audios: [...] }
-}
-```
+### Web-Side (shared/config.js)
+- Add or change weapon themes in `defaultTheme` and `themes`.
+- Map weapon hashes to theme names in `weaponThemes`.
+- Set `audioVolume` between `0.0` and `1.0` for the global volume.
+- Add an optional `volume` value to an individual streak entry to override the global volume.
 
 ### Styling (web/css/idk.css)
 - Overlay position (currently bottom-center at 90% from top)
@@ -140,12 +132,14 @@ The validation window and rate limit are configured in `shared/config.lua`.
 
 ## NUI Playback Lifecycle
 
-The NUI notification player stops previous media before starting a new kill banner, ignores stale playback callbacks, and clears its hide timer when a newer notification arrives.
+The NUI notification player reuses the currently loaded media when the next notification uses the same file, and only reloads a source when its path changes. It resets playback position between notifications, ignores stale callbacks, and clears its hide timer when a newer notification arrives. Media sources are released when the NUI page is closed.
 
 - Video and audio playback errors are handled separately.
 - A failed video hides the notification; a failed audio file logs a warning without stopping the video.
 - The notification hides when the video ends, with a duration-based fallback.
 - The fade-out timer matches the CSS animation duration.
+- Audio volume is configurable globally or per streak (0.0 to 1.0).
+- Repeated notifications using the same media file restart it without forcing another source load.
 - Media is stopped and unloaded when the NUI page is closed.
 
 ## Version Check
@@ -172,7 +166,7 @@ When publishing an update, change the version in both `fxmanifest.lua` and `vers
 ## Notes
 
 - Videos are muted in-game (auto-play with sound disabled)
-- Audio plays separately at low volume (10% default) to avoid overlap
+- Audio plays separately at low volume (10% default), configurable in `shared/config.js`
 - Kill streak resets after 10 seconds without a kill
 - Only player-on-player kills count (no NPC kills)
 - Notifications queue smoothly if kills happen rapidly
