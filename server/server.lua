@@ -67,11 +67,8 @@ AddEventHandler('playerKilled', function(victimNetId, weaponHash)
         return
     end
 
-    -- Consume the candidate so the same damage event cannot be replayed.
-    reports[victimNetId] = nil
-
-    local lastKill = lastAcceptedKill[src] or 0
-    if currentTime - lastKill < Config.killReportRateLimit then
+    local lastKill = lastAcceptedKill[src]
+    if lastKill and currentTime - lastKill < Config.killReportRateLimit then
         return
     end
 
@@ -92,6 +89,9 @@ AddEventHandler('playerKilled', function(victimNetId, weaponHash)
     if GetPlayerPed(victimOwner) ~= victimEntity then
         return
     end
+
+    -- Consume the candidate only after all checks pass.
+    reports[victimNetId] = nil
 
     lastAcceptedKill[src] = currentTime
     TriggerClientEvent('hud:updateKill', src, report.weaponHash)
